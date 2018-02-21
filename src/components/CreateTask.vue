@@ -53,7 +53,7 @@ export default class CreateTask extends Vue {
     private formItems: InputFormItemProps[] = [
         {title: 'Task Name', type: 'text'}
     ];
-    addTodo(val: string) {
+    private addTodo(val: string) {
         const time: Date = new Date();
         this.todos.push({
             id: this.todos.length,
@@ -62,18 +62,20 @@ export default class CreateTask extends Vue {
             doing: false,
             editing: false
         })
+        localStorage.todos = JSON.stringify(this.todos)
         console.log(this.todos);
     }
-    moveToOngoingTask (id: number) {
+    private moveToOngoingTask (id: number) {
         const target: todoProps = this.todos[id];
         if(target.editing == true) {alert('finish editing bofore you move you task');return;}
         target.doing = !target.doing;
         this.ongoingTodos.push(this.todos[id]);
+        localStorage.ongoingTodos = JSON.stringify(this.ongoingTodos)
         console.log(this.ongoingTodos);
         this.deleteTask(id);
 
     }
-    checkIfDoing(text: string | undefined) {
+    private checkIfDoing(text: string | undefined) {
         if(text == 'ongoing') {
             console.log("doing")
             return true
@@ -81,22 +83,24 @@ export default class CreateTask extends Vue {
         console.log("not doing")
         return false;
     }
-    deleteTask(id: number, text?: string) {
+    private deleteTask(id: number, text?: string) {
         if(this.checkIfDoing(text) == true) {
             const target: todoProps = this.ongoingTodos[id];
             this.ongoingTodos = this.ongoingTodos.filter(function(v) {
                 return v != target;
             })
+            localStorage.ongoingTodos = JSON.stringify(this.ongoingTodos)
             console.log('ongoingTodo deleted!');
         } else if (this.checkIfDoing(text) == false) {
             const target: todoProps = this.todos[id];
             this.todos = this.todos.filter(function(v) {
                 return v != target;
             })
+            localStorage.todos = JSON.stringify(this.todos)
             console.log('todo deleted!');
         }
     }
-    editTask(id: number, text?: string) {
+    private editTask(id: number, text?: string) {
         if(this.checkIfDoing(text) == true) {
             const target: todoProps = this.ongoingTodos[id];
             target.editing = !target.editing;
@@ -107,13 +111,24 @@ export default class CreateTask extends Vue {
             console.log('todo edited');
         }
     }
-    archiveTask(id: number, text: string) {
+    private archiveTask(id: number, text: string) {
         const target: todoProps = this.ongoingTodos[id];
         target.doing = !target.doing;
         this.archivedTodos.push(this.ongoingTodos[id]);
         console.log('archivedTodos -> ', this.archivedTodos);
         this.deleteTask(id, text);
         console.log('ongoingTodos -> ', this.ongoingTodos);
+    }
+    beforeMount(): void {
+        if(localStorage.todos) {
+            this.todos = JSON.parse(localStorage.todos)
+        }
+        if(localStorage.ongoingTodos) {
+            this.ongoingTodos = JSON.parse(localStorage.ongoingTodos)
+        }
+        // if(localStorage.archivedTodos) {
+        //     this.todos = JSON.parse(localStorage.archivedTodos)
+        // }
     }
 }
 </script>
